@@ -1,0 +1,104 @@
+<!DOCTYPE xhtml>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<title>SlideRuler</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<link rel="stylesheet" href="style.css">
+		<script src="SlideRule.js"></script>
+	</head>
+	<style>
+		label {
+			width: 200px;
+			text-align: right;
+		}
+		input {
+			font-size: 18px;
+		}
+		.ruleLabel {
+			width: 400px;
+			margin: 0 auto;
+			font-family: Arial, Helvetica, sans-serif;
+			font-weight: bold;
+		}
+		.ruleContainer {
+			overflow: hidden;
+			margin-top: 5px;
+  			margin-bottom: 15px;
+		}
+	</style>
+	<body style="background-color:#DDDDDD;">
+		<br>
+		<h2><center>Testing SlideRule.js</center></h2>
+		<br>
+		<div class="ruleLabel">
+			<label for="iLabel">Current (A) = </label>
+			<input type="text" id="iLabelInput" name="iLabel" value="0.05" size="8" readonly>
+		</div>
+		<div class="ruleContainer">
+			<div id="iRule"></div>
+		</div>
+		<div class="ruleLabel">
+			<label for="vLabel">Voltage (V) = </label>
+			<input type="text" id="vLabelInput" name="vLabel" value="5" size="8">
+		</div>
+		<div class="ruleContainer">
+			<div id="vRule"></div>
+		</div>
+		<div class="ruleLabel">
+			<label for="rLabel">Resistance (&#x2126;) = </label>
+			<input type="text" id="rLabelInput" name="rLabel" value="100" size="8">
+		</div>
+		<div class="ruleContainer">
+			<div id="rRule"></div>
+		</div>
+		<br>			
+		<script>
+			var iRule = null;
+			var vRule = null;
+			var rRule = null;
+			
+			window.onload = (event) => {
+				iRule = new SlideRule ('#iRule', 5, 375, 0.001, null, false);
+				iRule.setCursorValue (0.05);
+				
+				vRule = new SlideRule ('#vRule', 5, 375, 0.1, slideChanged, true);
+				vRule.setCursorValue (5);
+				
+				rRule = new SlideRule ('#rRule', 5, 375, 1, slideChanged, true);
+				rRule.setCursorValue (100);
+				
+				// window.addEventListener ('resize', resizeEventHandler, false);
+				// resizeEventHandler ();
+			};
+			
+			function slideChanged (val) {
+				var rawResistance = rRule.cursorValue ();
+				var resistance = Math.round (rawResistance * 10) / 10;
+				document.getElementById ("rLabelInput").value = resistance;
+				
+				var rawVoltage = vRule.cursorValue ();
+				var voltage = Math.round (rawVoltage * 100) / 100;
+				document.getElementById ("vLabelInput").value = voltage;
+				
+				var rawCurrent = rawVoltage / rawResistance;
+				var current = Math.round (rawCurrent * 10000) / 10000;
+				document.getElementById ("iLabelInput").value = current;
+				
+				iRule.setCursorValue (rawCurrent);
+			}
+			
+			/*
+			function resizeEventHandler () {
+				// When the window resizes, we want to fit the canvase 
+				var fullWidth = document.body.clientWidth;
+				canvas = document.getElementById ('canvas1');
+				canvas.width = fullWidth;
+				canvas.height = 80;
+				_cursor = Math.floor (canvas.width / 2);
+				SlideRuler.redraw (canvas, 5, _hOffset, 375, _cursor);
+			}
+			*/
+		</script>
+	</body>
+</html>
