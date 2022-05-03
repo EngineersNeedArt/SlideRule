@@ -59,13 +59,13 @@
 			var rRule = null;
 			
 			window.onload = (event) => {
-				iRule = new SlideRule ('#iRule', 5, 375, -3, null, false);
+				iRule = new SlideRule ('#iRule', 5, 350, -3, null, false);	// Was 375
 				iRule.setCursorValue (0.05);
 				
-				vRule = new SlideRule ('#vRule', 5, 350, -1, slideChanged, true);
+				vRule = new SlideRule ('#vRule', 5, 350, -1, slideChanged, true);	// Was 375
 				vRule.setCursorValue (5);
 				
-				rRule = new SlideRule ('#rRule', 5, 375, 0, slideChanged, true);
+				rRule = new SlideRule ('#rRule', 5, 350, 0, slideChanged, true);	// Was 375
 				rRule.setCursorValue (100);
 				
 				// window.addEventListener ('resize', resizeEventHandler, false);

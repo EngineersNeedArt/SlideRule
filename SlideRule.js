@@ -174,10 +174,36 @@ class SlideRule {
 		group.append (newText);
 	}
 	
+	getClientX (e) {
+		let clientX = 0;
+		if (e.changedTouches !== undefined) {
+			const firstTouch = e.changedTouches[0];
+			const containerRect = document.querySelector ('.slider__data').getBoundingClientRect ();
+			clientX = firstTouch.clientX - containerRect.left;
+		} else {			
+			clientX = e.clientX;
+		}
+		
+		return clientX;
+	}
+	
+	getClientY (e) {
+		let clientY = 0;
+		if (e.changedTouches !== undefined) {
+			const firstTouch = e.changedTouches[0];
+			const containerRect = document.querySelector ('.slider__data').getBoundingClientRect ();
+			clientY = firstTouch.clientY - containerRect.top;
+		} else {			
+			clientY = e.clientY;
+		}
+		
+		return clientY;
+	}
+	
 	getRelativeMouseCoordinates (e) {
 		const containerRect = document.querySelector ('.slider__data').getBoundingClientRect ();
-		const x = e.clientX - containerRect.left;
-		const y = e.clientY - containerRect.top;
+		const x = this.getClientX (e) - containerRect.left;
+		const y = this.getClientY (e) - containerRect.top;
 		return { x, y };
 	}
 	
@@ -200,7 +226,9 @@ class SlideRule {
 		const containerRect = document.querySelector ('.slider__data').getBoundingClientRect ();
 		this.center = containerRect.width / 2;
 		this.mouseDown = true;
-		this.startX = e.clientX;
+		this.startX = this.getClientX (e);
+		// const relativeMouse = this.getRelativeMouseCoordinates (e);
+		// this.startX = relativeMouse.x;
 		this.startValue = this.value;
 		this.callback (this.value);
 	}
@@ -212,7 +240,9 @@ class SlideRule {
 		
 		e.preventDefault ();
 		
-		var valueDelta = e.clientX - this.startX;
+		var valueDelta = this.getClientX (e) - this.startX;
+		// const relativeMouse = this.getRelativeMouseCoordinates (e);
+		// var valueDelta = relativeMouse.x - this.startX;
 		var offset = this.center - Math.round (Math.log10 (this.startValue) * this.span) + valueDelta;
 		offset = this.validOffset (offset);
 		var translateString = 'translate(' + offset + ' 0)';
