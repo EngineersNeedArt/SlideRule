@@ -4,11 +4,11 @@
 
 class SlideRule {
 	
-	constructor (DOMselector, magnitude, span, multiplier, callback, enabled) {
+	constructor (DOMselector, magnitude, span, smallestPowerOfTen, callback, enabled) {
 		this.domSelector = DOMselector;
 		this.magnitude = magnitude;
 		this.span = span;
-		this.multiplier = multiplier;
+		this.smallestPowerOfTen = smallestPowerOfTen;
 		this.callback = callback;
 		this.enabled = enabled;
 		this.container = document.querySelector (DOMselector);
@@ -25,7 +25,7 @@ class SlideRule {
 		const svgContainer = document.createElement ('div');
 		svgContainer.classList.add ('slider__data');
 		const svg = document.createElementNS ('http://www.w3.org/2000/svg', 'svg');
-		svg.setAttribute ('height', 80);
+		svg.setAttribute ('height', 60);
 		svg.setAttribute ('width', (this.span * this.magnitude) + 1);
 		svg.setAttribute ('display', 'block');
 		svgContainer.appendChild (svg);
@@ -53,7 +53,7 @@ class SlideRule {
 		svgRect.setAttribute ('x', 0);
 		svgRect.setAttribute ('y', 0);
 		svgRect.setAttribute ('width', (this.span * this.magnitude) + 1);
-		svgRect.setAttribute ('height', 80);
+		svgRect.setAttribute ('height', 60);
 		if (this.enabled) {
 			svgRect.setAttribute ('fill', 'white');
 		} else {
@@ -65,18 +65,37 @@ class SlideRule {
 		var start = 0.5;
 		var i;
 		for (i = 0; i < this.magnitude; i++) {
-			this.createScale (this.ruleGroup, start, start + this.span, 80);
+			this.createScale (this.ruleGroup, start, start + this.span, 60, true, true, i === (this.magnitude - 1));
 			start += this.span;
 		}
+		
+		// Add labels.
+		var labelGroup = document.createElementNS ('http://www.w3.org/2000/svg', 'g');
+		labelGroup.setAttribute ("fill", "blue");
+		labelGroup.setAttribute ("font-size", "18");
+		labelGroup.setAttribute ("font-family", "sans-serif");
+		labelGroup.setAttribute ("font-weight", "semi-bold");
+		start = 0.5;
+		for (i = 0; i < this.magnitude; i++) {
+			this.appendLabel (labelGroup, start, 31, Math.pow (10, this.smallestPowerOfTen + i));
+			start += this.span;
+		}
+		this.ruleGroup.append (labelGroup);
 		
 		// Create cursor.
 		const containerRect = document.querySelector ('.slider__data').getBoundingClientRect ();
 		const x = containerRect.width / 2;
-		this.createCursor (svg, x + 0.5, 80);
+		this.createCursor (svg, x + 0.5, 60);
 	}
 	
-	createScale (group, left, right, height) {
-		this.appendTick (group, left, 10, height - 10, "black");
+	createScale (group, left, right, height, onTop, onBottom, finalRule) {
+		var length = 20;
+		if (onTop) {
+			this.appendTick (group, left, 0, length, "black");
+		}
+		if (onBottom) {
+			this.appendTick (group, left, height - length, height, "black");
+		}
 		
 		var i;
 		for (i = 1; i < 90; i++) {
@@ -84,25 +103,34 @@ class SlideRule {
 				continue;
 			}
 			var x = Math.round(left + Math.log10 (1 + (i / 10)) * (right - left));
-			var top, bottom;
 			var color;
 			if ((i % 10) == 0) {
-				top = 10;
-				bottom = height - 10;
+				length = 20;
 				color = "rgb(64,64,256)";
 			} else if (i > 40) {
-				top = 25;
-				bottom = height - 25;
+				length = 12;
 				color = "rgb(128,128,256)";
 			} else {
-				top = 30;
-				bottom = height - 30;
+				length = 8;
 				color = "rgb(128,128,256)";
 			}
-			this.appendTick (group, x, top, bottom, color);
+			if (onTop) {
+				this.appendTick (group, x, 0, length, color);
+			}
+			if (onBottom) {
+				this.appendTick (group, x, height - length, height, color);
+			}
 		}
-	
-		this.appendTick (group, right, 10, height - 10, "black");
+		
+		if (finalRule) {
+			length = 20;
+			if (onTop) {
+				this.appendTick (group, right, 0, length, "black");
+			}
+			if (onBottom) {
+				this.appendTick (group, right, height - length, height, "black");
+			}
+		}
 	}
 	
 	createCursor (group, x, height) {
@@ -111,13 +139,39 @@ class SlideRule {
 	
 	appendTick (group, x, top, bottom, color) {
 		var newLine = document.createElementNS ('http://www.w3.org/2000/svg','line');
-		newLine.setAttribute ('id','line2');
 		newLine.setAttribute ('x1', x);
 		newLine.setAttribute ('y1',top);
 		newLine.setAttribute ('x2', x);
 		newLine.setAttribute ('y2', bottom);
 		newLine.setAttribute ("stroke", color)
 		group.append (newLine);
+	}
+	
+	appendVerticalPill (group, x, top, bottom, radius, color) {
+		var newPath = document.createElementNS ('http://www.w3.org/2000/svg','path');
+		const controlD = Math.floor (0.55191502449351 * radius * 100) / 100;
+		const controlDComplement = radius - controlD;
+		const separation = (bottom - top) - (radius * 2);
+		newPath.setAttribute ('d', "M " + x + " " + top + 
+				"c " + controlD + " 0 " + radius + " " + controlDComplement + " " + radius + " " + radius + 
+				"v " + separation + 
+				"c 0 " + controlD + " " + -controlDComplement + " " + radius + " " + -radius + " " + radius + 
+				"c " + -controlD + " 0 " + -radius + " " + -controlDComplement + " " + -radius + " " + -radius + 
+				"v " + -separation + 
+				"c 0 " + -controlD + " " + controlDComplement + " " + -radius + " " + radius + " " + -radius);
+		newPath.setAttribute ("fill", color)
+		group.append (newPath);
+	}
+	
+	appendLabel (group, x, y, text) {
+		var newText = document.createElementNS ('http://www.w3.org/2000/svg','text');
+		newText.setAttribute ('x', x);
+		newText.setAttribute ('y', y);
+		newText.setAttribute ("dominant-baseline", "middle");
+		newText.setAttribute ("text-anchor", "middle");
+		var textNode = document.createTextNode (text);
+		newText.appendChild (textNode);
+		group.append (newText);
 	}
 	
 	getRelativeMouseCoordinates (e) {
@@ -178,11 +232,11 @@ class SlideRule {
 	}
 	
 	cursorValue () {
-		return this.value * this.multiplier;
+		return this.value * Math.pow (10, this.smallestPowerOfTen);
 	}
 	
 	setCursorValue (val) {
-		var newValue = val / this.multiplier;
+		var newValue = val / Math.pow (10, this.smallestPowerOfTen);
 		
 		if ((newValue > 0)  && (Math.log10 (newValue) <= this.magnitude)) {
 			const containerRect = document.querySelector ('.slider__data').getBoundingClientRect ();
