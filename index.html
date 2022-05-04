@@ -36,21 +36,21 @@
 			<input type="text" id="iLabelInput" name="iLabel" value="0.05" size="8" readonly>
 		</div>
 		<div class="ruleContainer">
-			<div id="iRule"></div>
+			<div id="iRule" class="unselectable"></div>
 		</div>
 		<div class="ruleLabel">
 			<label for="vLabel">Voltage (V) = </label>
 			<input type="text" id="vLabelInput" name="vLabel" value="5" size="8">
 		</div>
 		<div class="ruleContainer">
-			<div id="vRule"></div>
+			<div id="vRule" class="unselectable"></div>
 		</div>
 		<div class="ruleLabel">
 			<label for="rLabel">Resistance (&#x2126;) = </label>
 			<input type="text" id="rLabelInput" name="rLabel" value="100" size="8">
 		</div>
 		<div class="ruleContainer">
-			<div id="rRule"></div>
+			<div id="rRule" class="unselectable"></div>
 		</div>
 		<br>			
 		<script>
@@ -59,7 +59,7 @@
 			var rRule = null;
 			
 			window.onload = (event) => {
-				iRule = new SlideRule ('#iRule', 5, 350, -3, null, false);	// Was 375
+				iRule = new SlideRule ('#iRule', 5, 350, -3, null, false);			// Was 375
 				iRule.setCursorValue (0.05);
 				
 				vRule = new SlideRule ('#vRule', 5, 350, -1, slideChanged, true);	// Was 375
@@ -68,8 +68,19 @@
 				rRule = new SlideRule ('#rRule', 5, 350, 0, slideChanged, true);	// Was 375
 				rRule.setCursorValue (100);
 				
-				// window.addEventListener ('resize', resizeEventHandler, false);
-				// resizeEventHandler ();
+				window.addEventListener ('resize', resizeEventHandler, false);
+				
+				const voltageInput = document.getElementById ('vLabelInput');
+				voltageInput.addEventListener ('change', function () {
+					vRule.setCursorValue (voltageInput.value);
+					slideChanged (null);
+				});
+				
+				const resistanceInput = document.getElementById ('rLabelInput');
+				resistanceInput.addEventListener ('change', function () {
+					rRule.setCursorValue (resistanceInput.value);
+					slideChanged (null);
+				});
 			};
 			
 			function slideChanged (val) {
@@ -88,17 +99,9 @@
 				iRule.setCursorValue (rawCurrent);
 			}
 			
-			/*
 			function resizeEventHandler () {
-				// When the window resizes, we want to fit the canvase 
-				var fullWidth = document.body.clientWidth;
-				canvas = document.getElementById ('canvas1');
-				canvas.width = fullWidth;
-				canvas.height = 80;
-				_cursor = Math.floor (canvas.width / 2);
-				SlideRuler.redraw (canvas, 5, _hOffset, 375, _cursor);
+				console.log ("Resized");	// TODO, need to handle.
 			}
-			*/
 		</script>
 	</body>
 </html>
